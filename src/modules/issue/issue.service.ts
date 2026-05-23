@@ -1,21 +1,22 @@
 import { StatusCodes } from "http-status-codes";
-import type { IIssue } from "../../types";
+import type { CustomError, IIssue, IIssueQueryParams, IUpdateIssue, IUser } from "../../types";
 import { pool } from "../../db";
+import sendResponse from "../../utility/sendResponse";
 
 
 const createIssueInDB = async (payload: IIssue) => {
     const { title, description, type, reporter_id } = payload;
 
-     if (!title || !description || !type) {
+    if (!title || !description || !type) {
 
         const err: any = new Error("Title, description, and type are required");
         err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }
 
-      if (title.length > 150) {
+    if (title.length > 150) {
         const err: any = new Error("Title must not exceed 150 characters");
-        err.statusCode =StatusCodes.BAD_REQUEST
+        err.statusCode = StatusCodes.BAD_REQUEST
         throw err;
     }
     if (description.length < 20) {
@@ -24,9 +25,9 @@ const createIssueInDB = async (payload: IIssue) => {
         throw err;
     }
 
-     if (!["bug", "feature_request"].includes(type)) {
+    if (!["bug", "feature_request"].includes(type)) {
         const err: any = new Error("Type must be either bug or feature_request");
-         err.statusCode = StatusCodes.BAD_REQUEST;
+        err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }
 
@@ -41,11 +42,11 @@ const createIssueInDB = async (payload: IIssue) => {
 }
 
 
-const getAllIssuesFromDB = async (queryParams: any) => {
-     const { sort, type, status } = queryParams;
+const getAllIssuesFromDB = async (queryParams: IIssueQueryParams) => {
+    const { sort, type, status } = queryParams;
     let baseQuery = `SELECT * FROM issues`;
     const filterClauses: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | boolean | null)[] = [];
 
     // Filter by type
     if (type) {
@@ -71,7 +72,7 @@ const getAllIssuesFromDB = async (queryParams: any) => {
     if (issues.length === 0) return [];
 
 
-   
+
     const reporterIds = Array.from(new Set(issues.map((i) => i.reporter_id)));
 
     // Fetch matching reporters
@@ -95,8 +96,8 @@ const getAllIssuesFromDB = async (queryParams: any) => {
 const getSingleIssueFromDB = async (id: string) => {
     const issueResult = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id]);
     if (issueResult.rows.length === 0) {
-        const err: any = new Error("Issue not found");
-        err.statusCode = 404;
+        const err: CustomError = new Error("Issue not found");
+        err.statusCode = StatusCodes.NOT_FOUND;
         throw err;
     }
     const issue = issueResult.rows[0];
@@ -113,9 +114,115 @@ const getSingleIssueFromDB = async (id: string) => {
     };
 };
 
+const updateIssueInDB = async (
+  id: string,
+  payload: IUpdateIssue,
+  currentUser: IUser & { id: number }
+) => {
+ 
+  const { title, description, type, status } = payload;
+
+  if (!currentUser) {
+     const err: CustomError = new Error("Unauthorized");
+    err.statusCode = StatusCodes.UNAUTHORIZED;
+    throw err;
+    }
+
+  const issueResult = await pool.query(
+    `SELECT * FROM issues WHERE id = $1`,
+    [id]
+  );
+
+  if (issueResult.rows.length === 0) {
+    const err: CustomError = new Error("Issue not found");
+    err.statusCode = StatusCodes.NOT_FOUND;
+    throw err;
+  }
+
+  const issue: IIssue = issueResult.rows[0];
+
+  
+  if (currentUser.role === "contributor") {
+    if (issue.reporter_id !== currentUser.id) {
+      const err: CustomError = new Error(
+        "Forbidden: cannot update others issue"
+      );
+      err.statusCode = StatusCodes.FORBIDDEN;
+      throw err;
+    }
+
+    if (issue.status !== "open") {
+      const err: CustomError = new Error(
+        "Conflict: only open issues can be updated"
+      );
+      err.statusCode = StatusCodes.CONFLICT;
+      throw err;
+    }
+
+ 
+    if (status) {
+      const err: CustomError = new Error(
+        "Forbidden: contributor cannot update status"
+      );
+      err.statusCode = StatusCodes.FORBIDDEN;
+      throw err;
+    }
+  }
+
+  if (title && title.length > 150) {
+    const err: CustomError = new Error("Title max 150 characters");
+    err.statusCode = StatusCodes.BAD_REQUEST;
+    throw err;
+  }
+
+  if (description && description.length < 20) {
+    const err: CustomError = new Error("Description min 20 characters");
+    err.statusCode = StatusCodes.BAD_REQUEST;
+    throw err;
+  }
+
+  if (type && !["bug", "feature_request"].includes(type)) {
+    const err: CustomError = new Error("Invalid type");
+    err.statusCode = StatusCodes.BAD_REQUEST;
+    throw err;
+  }
+
+  if (status && !["open", "in_progress", "resolved"].includes(status)) {
+    const err: CustomError = new Error("Invalid status");
+    err.statusCode = StatusCodes.BAD_REQUEST;
+    throw err;
+  }
+
+ 
+  const result = await pool.query(
+    `
+    UPDATE issues
+    SET
+      title = COALESCE($1, title),
+      description = COALESCE($2, description),
+      type = COALESCE($3, type),
+      status = COALESCE($4, status),
+      updated_at = NOW()
+    WHERE id = $5
+    RETURNING *
+    `,
+    [
+      title ?? null,
+      description ?? null,
+      type ?? null,
+      status ?? null,
+      id,
+    ]
+  );
+
+  return result.rows[0];
+};
+
+
 
 export const issueService = {
     createIssueInDB,
     getAllIssuesFromDB,
-    getSingleIssueFromDB
+    getSingleIssueFromDB,
+    updateIssueInDB
 }
