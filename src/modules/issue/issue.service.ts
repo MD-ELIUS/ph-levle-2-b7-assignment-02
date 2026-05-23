@@ -38,13 +38,64 @@ const createIssueInDB = async (payload: IIssue) => {
     );
     return result;
 
+}
 
 
+const getAllIssuesFromDB = async (queryParams: any) => {
+     const { sort, type, status } = queryParams;
+    let baseQuery = `SELECT * FROM issues`;
+    const filterClauses: string[] = [];
+    const values: any[] = [];
 
+    // Filter by type
+    if (type) {
+        values.push(type);
+        filterClauses.push(`type = $${values.length}`);
+    }
+    // Filter by status
+    if (status) {
+        values.push(status);
+        filterClauses.push(`status = $${values.length}`);
+    }
+
+    if (filterClauses.length > 0) {
+        baseQuery += ` WHERE ` + filterClauses.join(" AND ");
+    }
+
+
+    // Sort: newest (default) or oldest
+    const orderDirection = sort === "oldest" ? "ASC" : "DESC";
+    baseQuery += ` ORDER BY created_at ${orderDirection}`;
+    const issuesData = await pool.query(baseQuery, values);
+    const issues = issuesData.rows;
+    if (issues.length === 0) return [];
+
+
+   
+    const reporterIds = Array.from(new Set(issues.map((i) => i.reporter_id)));
+
+    // Fetch matching reporters
+    const usersData = await pool.query(
+        `SELECT id, name, role FROM users WHERE id = ANY($1)`,
+        [reporterIds]
+    );
+    const usersMap = new Map(usersData.rows.map((u) => [u.id, u]));
+    // Map reporters back to issues
+    return issues.map((issue) => {
+        const reporter = usersMap.get(issue.reporter_id) || null;
+        const { reporter_id, ...issueDetails } = issue;
+        return {
+            ...issueDetails,
+            reporter
+        };
+    });
 
 }
 
 
+
+
 export const issueService = {
-    createIssueInDB
+    createIssueInDB,
+    getAllIssuesFromDB,
 }

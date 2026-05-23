@@ -31,7 +31,36 @@ const createIssue = async (req: Request, res: Response, next: NextFunction) => {
  
 }
 
+const getAllIssues = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const result = await issueService.getAllIssuesFromDB(req.query);
+
+        sendResponse(res, {
+            statusCode: StatusCodes.OK,
+            success: true,
+            message: "Issues retrieved successfully",
+            data: result,
+        })
+
+        res.status(StatusCodes.OK).json({
+            success: true,
+            data: result
+        });
+    } catch (error : any) {
+         sendResponse(res, {
+            statusCode: error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+            success: false,
+            message: error.message,
+            error: error
+        })
+    }
+};
+
+
+
+
 
 export const issueController = {
-    createIssue
+    createIssue,
+    getAllIssues
 }
