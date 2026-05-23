@@ -14,3 +14,6 @@ console.log(`Example app listening on port ${config.port}`)
 }
 
 main() ;
+
+
+export default app;
