@@ -3,8 +3,9 @@ import { pool } from "../../db";
 import { StatusCodes } from "http-status-codes";
 import jwt, { type SignOptions } from "jsonwebtoken"
 import config from "../../config";
+import type { IUser } from "../../types";
 
-const createUserIntoDB = async (payload: any) => {
+const createUserIntoDB = async (payload: IUser) => {
     const { name, email, password, role } = payload;
 
     if (!name || !email || !password) {
@@ -49,7 +50,7 @@ const loginUserFromDB = async (payload: {
 
     if (userData.rows.length === 0) {
         const err: any = new Error("Invalid credentials");
-        err.statusCode = StatusCodes.BAD_REQUEST;
+        err.statusCode = StatusCodes.UNAUTHORIZED;
         throw err;
     }
 
@@ -58,7 +59,7 @@ const loginUserFromDB = async (payload: {
     const matchPassword = await bcrypt.compare(password, user.password);
     if (!matchPassword) {
         const err: any = new Error("Invalid credentials");
-        err.statusCode = StatusCodes.BAD_REQUEST;
+        err.statusCode = StatusCodes.UNAUTHORIZED;
         throw err;
     }
 

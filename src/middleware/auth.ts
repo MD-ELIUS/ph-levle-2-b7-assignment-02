@@ -56,3 +56,6 @@ const auth = (...roles: ROLES[]) => {
 
     }
 }
+
+
+export default auth;
