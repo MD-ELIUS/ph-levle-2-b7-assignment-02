@@ -92,10 +92,30 @@ const getAllIssuesFromDB = async (queryParams: any) => {
 
 }
 
-
+const getSingleIssueFromDB = async (id: string) => {
+    const issueResult = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id]);
+    if (issueResult.rows.length === 0) {
+        const err: any = new Error("Issue not found");
+        err.statusCode = 404;
+        throw err;
+    }
+    const issue = issueResult.rows[0];
+    // Fetch reporter details (No JOINs allowed)
+    const reporterResult = await pool.query(
+        `SELECT id, name, role FROM users WHERE id = $1`,
+        [issue.reporter_id]
+    );
+    const reporter = reporterResult.rows[0] || null;
+    const { reporter_id, ...issueDetails } = issue;
+    return {
+        ...issueDetails,
+        reporter
+    };
+};
 
 
 export const issueService = {
     createIssueInDB,
     getAllIssuesFromDB,
+    getSingleIssueFromDB
 }
