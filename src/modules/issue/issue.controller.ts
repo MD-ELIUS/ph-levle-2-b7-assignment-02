@@ -8,20 +8,20 @@ const createIssue = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
 
-        const reporterId = req.user!.id; 
-        const result = await issueService.createIssueInDB({...req.body, reporter_id: reporterId });
+        const reporterId = req.user!.id;
+        const result = await issueService.createIssueInDB({ ...req.body, reporter_id: reporterId });
 
-          sendResponse(res, {
+        sendResponse(res, {
             statusCode: StatusCodes.CREATED,
             success: true,
-            message:  "Issue created successfully",
+            message: "Issue created successfully",
             data: result.rows[0],
         })
 
-        
-    } catch (error ) {
-        const err = error as CustomError; 
-          sendResponse(res, {
+
+    } catch (error) {
+        const err = error as CustomError;
+        sendResponse(res, {
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
@@ -29,24 +29,24 @@ const createIssue = async (req: Request, res: Response, next: NextFunction) => {
         })
 
     }
- 
+
 }
 
 const getAllIssues = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const result = await issueService.getAllIssuesFromDB(req.query);
 
-           sendResponse(res, {
+        sendResponse(res, {
             statusCode: StatusCodes.OK,
             success: true,
             message: "Issues retrieved successfully",
             data: result,
         })
 
-       
-    } catch (error ) {
-        const err = error as CustomError; 
-         sendResponse(res, {
+
+    } catch (error) {
+        const err = error as CustomError;
+        sendResponse(res, {
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
@@ -58,16 +58,16 @@ const getAllIssues = async (req: Request, res: Response, next: NextFunction) => 
 const getSingleIssue = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
     try {
-const result = await issueService.getSingleIssueFromDB(id as string);
-         sendResponse(res, {
+        const result = await issueService.getSingleIssueFromDB(id as string);
+        sendResponse(res, {
             statusCode: StatusCodes.OK,
             success: true,
             message: "Issue retrieved successfully",
             data: result,
         })
     } catch (error) {
-        const err = error as CustomError; 
-         sendResponse(res, {
+        const err = error as CustomError;
+        sendResponse(res, {
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
@@ -77,30 +77,52 @@ const result = await issueService.getSingleIssueFromDB(id as string);
 };
 
 export const updateIssue = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const id = req.params.id;
+    try {
+        const id = req.params.id;
 
-   const currentUser = req.user as IUser & { id: number };
+        const currentUser = req.user as IUser & { id: number };
 
-    const payload: IUpdateIssue = req.body;
+        const payload: IUpdateIssue = req.body;
 
-    const result = await issueService.updateIssueInDB(id as string , payload, currentUser  );
+        const result = await issueService.updateIssueInDB(id as string, payload, currentUser);
 
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Issue updated successfully",
-      data: result,
-    });
-  } catch (error) {
-     const err = error as CustomError; 
-         sendResponse(res, {
+        sendResponse(res, {
+            statusCode: StatusCodes.OK,
+            success: true,
+            message: "Issue updated successfully",
+            data: result,
+        });
+    } catch (error) {
+        const err = error as CustomError;
+        sendResponse(res, {
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
             error: error
         })
-  }
+    }
+};
+
+const deleteIssue = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await issueService.deleteIssueFromDB(req.params.id as string);
+
+        sendResponse(res, {
+            statusCode: StatusCodes.NO_CONTENT,
+            success: true,
+            message: "Issue deleted successfully"
+
+        });
+
+    } catch (error) {
+        const err = error as CustomError;
+        sendResponse(res, {
+            statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+            success: false,
+            message: err.message,
+            error: error
+        })
+    }
 };
 
 
@@ -108,5 +130,6 @@ export const issueController = {
     createIssue,
     getAllIssues,
     getSingleIssue,
-    updateIssue
+    updateIssue,
+    deleteIssue
 }

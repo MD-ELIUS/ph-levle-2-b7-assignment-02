@@ -123,7 +123,7 @@ const updateIssueInDB = async (
   const { title, description, type, status } = payload;
 
   if (!currentUser) {
-     const err: CustomError = new Error("Unauthorized");
+    const err: CustomError = new Error("Unauthorized");
     err.statusCode = StatusCodes.UNAUTHORIZED;
     throw err;
     }
@@ -218,11 +218,22 @@ const updateIssueInDB = async (
   return result.rows[0];
 };
 
+const deleteIssueFromDB = async (id: string) => {
+    const checkIssue = await pool.query(`SELECT id FROM issues WHERE id = $1`, [id]);
+    if (checkIssue.rows.length === 0) {
+        const err: CustomError = new Error("Issue not found");
+        err.statusCode = StatusCodes.NOT_FOUND;
+        throw err;
+    }
+    await pool.query(`DELETE FROM issues WHERE id = $1`, [id]);
+};
+
 
 
 export const issueService = {
     createIssueInDB,
     getAllIssuesFromDB,
     getSingleIssueFromDB,
-    updateIssueInDB
+    updateIssueInDB,
+    deleteIssueFromDB
 }
