@@ -9,24 +9,24 @@ const createIssueInDB = async (payload: IIssue) => {
 
     if (!title || !description || !type) {
 
-        const err: any = new Error("Title, description, and type are required");
+        const err: CustomError = new Error("Title, description, and type are required");
         err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }
 
     if (title.length > 150) {
-        const err: any = new Error("Title must not exceed 150 characters");
+        const err: CustomError = new Error("Title must not exceed 150 characters");
         err.statusCode = StatusCodes.BAD_REQUEST
         throw err;
     }
     if (description.length < 20) {
-        const err: any = new Error("Description must be at least 20 characters");
+        const err: CustomError = new Error("Description must be at least 20 characters");
         err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }
 
     if (!["bug", "feature_request"].includes(type)) {
-        const err: any = new Error("Type must be either bug or feature_request");
+        const err: CustomError = new Error("Type must be either bug or feature_request");
         err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import type { ROLES } from "../types";
+import type { CustomError, ROLES } from "../types";
 import { StatusCodes } from "http-status-codes";
 import sendResponse from "../utility/sendResponse";
 import jwt, { type JwtPayload } from "jsonwebtoken"
@@ -50,8 +50,9 @@ const auth = (...roles: ROLES[]) => {
 
 
 
-        } catch (error : any) {
-                next(error)
+        } catch (error) {
+             const err = error as CustomError;
+                next(err)
         }
 
     }

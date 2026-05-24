@@ -1,11 +1,12 @@
 import type { Response } from "express"
+import type { CustomError } from "../types";
 
 type TResponse <T> = {
     statusCode: number ;
     success: boolean ;
     message : string ;
     data? : T ;
-    error?: any ;
+    error?: CustomError ;
 }
 
 const sendResponse = <T> (res: Response, data: TResponse<T>)  => {

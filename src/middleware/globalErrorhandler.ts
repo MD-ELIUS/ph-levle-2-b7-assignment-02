@@ -1,17 +1,19 @@
-import type { NextFunction, Request, Response } from "express";
+import type { ErrorRequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
+import type { CustomError } from "../types";
+import sendResponse from "../utility/sendResponse";
 
-const globalErrorHandler = (err : any , req : Request, res : Response, next : NextFunction) => {
-//   console.error(err.stack); // Log the error
 
-const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-    const message = err.message || "Something went wrong";
+const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    
+    const error = err as CustomError; 
 
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || "Internal Server Error",
-    errors: err.errors || null
-  });
-}
+    sendResponse(res, {
+        statusCode: error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+        success: false,
+        message: error.message || "Something went wrong",
+        error: error
+    });
+};
 
-export default globalErrorHandler
+export default globalErrorHandler;

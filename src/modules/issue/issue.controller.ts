@@ -25,7 +25,7 @@ const createIssue = async (req: Request, res: Response, next: NextFunction) => {
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
-            error: error
+            error: err
         })
 
     }
@@ -50,7 +50,7 @@ const getAllIssues = async (req: Request, res: Response, next: NextFunction) => 
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
-            error: error
+            error: err
         })
     }
 };
@@ -71,7 +71,7 @@ const getSingleIssue = async (req: Request, res: Response, next: NextFunction) =
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
-            error: error
+            error: err
         })
     }
 };
@@ -98,7 +98,7 @@ export const updateIssue = async (req: Request, res: Response, next: NextFunctio
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
-            error: error
+            error: err
         })
     }
 };
@@ -120,7 +120,7 @@ const deleteIssue = async (req: Request, res: Response, next: NextFunction) => {
             statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
             message: err.message,
-            error: error
+            error: err
         })
     }
 };

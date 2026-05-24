@@ -3,13 +3,13 @@ import { pool } from "../../db";
 import { StatusCodes } from "http-status-codes";
 import jwt, { type SignOptions } from "jsonwebtoken"
 import config from "../../config";
-import type { IUser } from "../../types";
+import type { CustomError, IUser } from "../../types";
 
 const createUserIntoDB = async (payload: IUser) => {
     const { name, email, password, role } = payload;
 
     if (!name || !email || !password) {
-        const err: any = new Error("Name, email, and password must be provided");
+        const err: CustomError = new Error("Name, email, and password must be provided");
         err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }
@@ -37,7 +37,7 @@ const loginUserFromDB = async (payload: {
     const { email, password } = payload;
 
     if (!email || !password) {
-        const err: any = new Error("Email and password are required");
+        const err: CustomError = new Error("Email and password are required");
         err.statusCode = StatusCodes.BAD_REQUEST;
         throw err;
     }
@@ -49,7 +49,7 @@ const loginUserFromDB = async (payload: {
        
 
     if (userData.rows.length === 0) {
-        const err: any = new Error("Invalid credentials");
+        const err: CustomError = new Error("Invalid credentials");
         err.statusCode = StatusCodes.UNAUTHORIZED;
         throw err;
     }
@@ -58,7 +58,7 @@ const loginUserFromDB = async (payload: {
     
     const matchPassword = await bcrypt.compare(password, user.password);
     if (!matchPassword) {
-        const err: any = new Error("Invalid credentials");
+        const err: CustomError = new Error("Invalid credentials");
         err.statusCode = StatusCodes.UNAUTHORIZED;
         throw err;
     }

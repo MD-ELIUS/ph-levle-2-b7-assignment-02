@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express"
 import { authService } from "./auth.service"
 import sendResponse from "../../utility/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import type { CustomError } from "../../types";
 
 const signUp = async (req: Request, res: Response) => {
     try {
@@ -14,12 +15,13 @@ const signUp = async (req: Request, res: Response) => {
             data: result.rows[0],
         })
 
-    } catch (error: any) {
+    } catch (error) {
+         const err = error as CustomError;
         sendResponse(res, {
-            statusCode: error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+            statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
-            message: error.message,
-            error: error
+            message: err.message,
+            error: err
         })
     }
 }
@@ -35,12 +37,13 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             message: "Login successful",
             data: result,
         })
-  } catch (error : any) {
+  } catch (error) {
+     const err = error as CustomError;
        sendResponse(res, {
-            statusCode: error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+            statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
             success: false,
-            message: error.message,
-            error: error
+            message: err.message,
+            error: err
         })
   }
 }
