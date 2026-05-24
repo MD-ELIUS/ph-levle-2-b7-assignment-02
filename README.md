@@ -109,7 +109,7 @@ node dist/server.js
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | SERIAL | PRIMARY KEY |
-| `name` | VARCHAR(100) | NOT NULL |
+| `name` | VARCHAR(50) | NOT NULL |
 | `email` | VARCHAR(150) | UNIQUE, NOT NULL |
 | `password` | TEXT | NOT NULL (bcrypt hashed) |
 | `role` | VARCHAR(20) | DEFAULT `'contributor'`, CHECK IN (`'contributor'`, `'maintainer'`) |
@@ -249,6 +249,7 @@ All errors follow a consistent JSON structure:
 |------|---------|
 | `200` | Success |
 | `201` | Resource created |
+| `204` | 	No Content/Delete |
 | `400` | Bad request / Validation error |
 | `401` | Unauthorized (missing or invalid token) |
 | `403` | Forbidden (insufficient permissions) |
