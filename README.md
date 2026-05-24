@@ -249,7 +249,6 @@ All errors follow a consistent JSON structure:
 |------|---------|
 | `200` | Success |
 | `201` | Resource created |
-| `204` | 	No Content/Delete |
 | `400` | Bad request / Validation error |
 | `401` | Unauthorized (missing or invalid token) |
 | `403` | Forbidden (insufficient permissions) |
