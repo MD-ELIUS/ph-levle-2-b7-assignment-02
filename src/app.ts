@@ -11,12 +11,7 @@ const app : Application = express()
 app.use(express.json())
 app.use(express.text()) ;
 app.use(express.urlencoded({ extended: true }))
-app.use(cors({
-    origin: config.url,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}))
+app.use(cors({ origin: true, credentials: true }));
 
 app.get('/', (req : Request, res : Response) => {
 
