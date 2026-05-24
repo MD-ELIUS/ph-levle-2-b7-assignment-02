@@ -108,7 +108,7 @@ const deleteIssue = async (req: Request, res: Response, next: NextFunction) => {
         await issueService.deleteIssueFromDB(req.params.id as string);
 
         sendResponse(res, {
-            statusCode: StatusCodes.NO_CONTENT,
+            statusCode: StatusCodes.OK,
             success: true,
             message: "Issue deleted successfully"
 
