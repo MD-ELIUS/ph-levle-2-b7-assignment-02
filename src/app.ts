@@ -4,6 +4,7 @@ import globalErrorHandler from "./middleware/globalErrorhandler";
 import { issueRoute } from "./modules/issue/issue.route";
 import cors from "cors";
 import config from "./config";
+import notFound from "./middleware/notFound";
 
 const app : Application = express()
 
@@ -25,7 +26,8 @@ app.get('/', (req : Request, res : Response) => {
 app.use("/api/auth", authRoute )
 app.use("/api/issues", issueRoute);
 
-
+// Route Not Found Middleware
+app.use(notFound);
 
 // Global Error Handling Middleware
 app.use(globalErrorHandler);
